@@ -446,31 +446,33 @@ void mostrar_controles() {
     cout << "----------------\n";
 }
 
+
 // Función para configurar la terminal para lectura sin bloqueo
 void configurar_terminal(struct termios &old_settings) {
     struct termios new_settings;
-    tcgetattr(0, &old_settings);
-    new_settings = old_settings;
-    new_settings.c_lflag &= ~ICANON;
-    new_settings.c_lflag &= ~ECHO;
-    new_settings.c_cc[VMIN] = 0;
-    new_settings.c_cc[VTIME] = 0;
-    tcsetattr(0, TCSANOW, &new_settings);
-    fcntl(0, F_SETFL, O_NONBLOCK);
+    tcgetattr(0, &old_settings);            // Guarda configuración actual del teclado
+    new_settings = old_settings;            // Crea una copia para modificar
+    new_settings.c_lflag &= ~ICANON;        // Desactiva modo canónico (no esperar ENTER)
+    new_settings.c_lflag &= ~ECHO;          // Desactiva eco (no mostrar lo que escribes)
+    new_settings.c_cc[VMIN] = 0;            // No requiere número mínimo de caracteres
+    new_settings.c_cc[VTIME] = 0;           // Sin tiempo de espera
+    tcsetattr(0, TCSANOW, &new_settings);   // Aplica los nuevos ajustes inmediatamente
+    fcntl(0, F_SETFL, O_NONBLOCK);          // Establece entrada estándar (0) como no bloqueante
 }
+
 
 // Restaura la configuración original de la terminal
 void restaurar_terminal(const struct termios &old_settings) {
-    tcsetattr(0, TCSANOW, &old_settings);
-    fcntl(0, F_SETFL, 0);
+    tcsetattr(0, TCSANOW, &old_settings);  // Restaura los ajustes originales del teclado
+    fcntl(0, F_SETFL, 0);                  // Vuelve al modo bloqueante por defecto
 }
 
 char procesar_input() {
     char c;
     if (read(0, &c, 1) < 1) {
-        return 0;
+        return 0;  // No se presionó ninguna tecla
     }
-    return c;
+    return c;     // Retorna el carácter presionado
 }
 
 int main(int argc, char* argv[]) {
